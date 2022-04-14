@@ -9,11 +9,13 @@ const userRoute = require("./routes/userRoute");
 app.use(cors());
 dotenv.config();
 connectDB();
+app.use(express.json());
+
+app.use("/api/users", userRoute);
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
-app.use("api/users", userRoute);
 app.get("/api/chat", (req, res) => {
   console.log(chats);
   res.send(chats);

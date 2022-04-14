@@ -2,15 +2,17 @@ const asyncHandler = require("express-async-handler");
 const res = require("express/lib/response");
 const User = require("../models/userModel");
 const { use } = require("../routes/userRoute");
-const registerUser = asyncHandler(async () => {
+const generateToken = require("../config/generateToken");
+const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, pic } = req.body;
+  console.log(name, email, password, pic);
   if (!name || !email || !password) {
-    res.send(400);
+    res.sendStatus(400);
     throw new Error("Please eneter all the fields");
   }
   const userExists = await User.findOne({ email });
   if (userExists) {
-    res.send(400);
+    res.sendStatus(400);
     throw new Error("User Already exist");
   }
   const user = await User.create({
@@ -20,7 +22,27 @@ const registerUser = asyncHandler(async () => {
     pic,
   });
   if (user) {
-    res.send(201).json({
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.sendStatus(400);
+    throw new Error("Fail to create user");
+  }
+});
+const authUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.sendStatus(400);
+    throw new Error("Please enter all  values");
+  }
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -29,8 +51,7 @@ const registerUser = asyncHandler(async () => {
     });
   } else {
     res.send(400);
-    throw new Error("Fail to create user");
+    throw new Error("Either email or password is invalid");
   }
 });
-
-module.exports = { registerUser };
+module.exports = { registerUser, authUser };
