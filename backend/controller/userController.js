@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const res = require("express/lib/response");
 const User = require("../models/userModel");
-const { use } = require("../routes/userRoute");
 const generateToken = require("../config/generateToken");
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, pic } = req.body;
@@ -41,13 +40,13 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error("Please enter all  values");
   }
   const userExists = await User.findOne({ email });
-  if (userExists) {
+  if (userExists && (await userExists.matchPassword(password))) {
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      pic: user.pic,
-      token: generateToken(user._id),
+      _id: userExists._id,
+      name: userExists.name,
+      email: userExists.email,
+      pic: userExists.pic,
+      token: generateToken(userExists._id),
     });
   } else {
     res.send(400);

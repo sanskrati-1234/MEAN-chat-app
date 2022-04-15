@@ -7,7 +7,7 @@ const connectDB = require("./config/db");
 const userRoute = require("./routes/userRoute");
 
 app.use(cors());
-dotenv.config();
+require("dotenv").config();
 connectDB();
 app.use(express.json());
 

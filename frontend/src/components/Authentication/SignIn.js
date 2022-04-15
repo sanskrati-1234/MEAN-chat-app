@@ -8,7 +8,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-
+import { useToast } from "@chakra-ui/react";
 const SignIn = () => {
   const [show, setShow] = useState(false);
   const [name, setName] = useState();
@@ -16,8 +16,29 @@ const SignIn = () => {
   const [confirmPassword, setConfirmPassword] = useState();
   const [password, setPassword] = useState();
   const [pic, setPic] = useState();
+  const [loading, setLoading] = useState(false);
   const handleClick = () => setShow(!show);
-  const postDetails = (pics) => {};
+  const toast = useToast();
+  const postDetails = (pic) => {
+    setLoading(true);
+    if (pic === undefined) {
+      toast({
+        title: "Please Enter Image.",
+
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+    if (pic.type === "image/jpeg" || pic.type === "image/png") {
+      const data = new FormData();
+      data.append("file", pic);
+      data.append("upload_preset", "chat-app");
+      data.append("cloud_name", "ddfwyo2de");
+    }
+  };
   const submitHandler = () => {};
   return (
     <VStack spacing="5px" color="black">
