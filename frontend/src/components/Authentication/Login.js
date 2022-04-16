@@ -6,19 +6,46 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  toast,
   VStack,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import axios from "axios";
 const Login = () => {
   const [show, setShow] = useState(false);
 
   const [email, setEmail] = useState();
 
   const [password, setPassword] = useState();
-
+  const [loading, setLoading] = useState(false);
   const handleClick = () => setShow(!show);
 
-  const submitHandler = () => {};
+  const submitHandler = async () => {
+    setLoading(true);
+    if (!email && !password) {
+      toast({
+        title: "Email or passowrd is missing",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "buttom",
+      });
+      setLoading(false);
+      return;
+    }
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const user = await axios.post(
+        "http://localhost:5000/api/users/login",
+        { email, password },
+        config
+      );
+    } catch (error) {}
+  };
   return (
     <VStack spacing="5px" color="black">
       <FormControl id="email" isRequired>
@@ -49,6 +76,7 @@ const Login = () => {
         width="100%"
         style={{ marginTop: 15 }}
         onClick={submitHandler}
+        isLoading={loading}
       >
         Login
       </Button>

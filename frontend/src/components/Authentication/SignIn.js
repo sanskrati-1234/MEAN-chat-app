@@ -9,6 +9,9 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useToast } from "@chakra-ui/react";
+import { post } from "../../";
+import axios from "axios";
+import { useHistory } from "react-router-dom";
 const SignIn = () => {
   const [show, setShow] = useState(false);
   const [name, setName] = useState();
@@ -19,6 +22,7 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const handleClick = () => setShow(!show);
   const toast = useToast();
+  const history = useHistory();
   const postDetails = (pic) => {
     setLoading(true);
     if (pic === undefined) {
@@ -36,10 +40,88 @@ const SignIn = () => {
       const data = new FormData();
       data.append("file", pic);
       data.append("upload_preset", "chat-app");
-      data.append("cloud_name", "ddfwyo2de");
+      data.append("cloud_name", "piyushproj");
+      fetch("https://api.cloudinary.com/v1_1/piyushproj/image/upload", {
+        method: "post",
+        body: data,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setPic(data.url.toString());
+          console.log(data.url.toString());
+          setLoading(false);
+        });
+    } else {
+      toast({
+        title: "Please Enter Image.",
+
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
     }
   };
-  const submitHandler = () => {};
+  const submitHandler = async () => {
+    setLoading(true);
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        title: "Please Enter All the fields.",
+
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password and confirm password is not same",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const { data } = await axios.post(
+        "http://localhost:5000/api/users",
+        { name, email, password, confirmPassword },
+        config
+      );
+      toast({
+        title: "Registration is successful",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      localStorage.setItem("userinfo", JSON.stringify(data));
+      setLoading(false);
+      history.push("/chats");
+    } catch (error) {
+      toast({
+        title: "Error Occured",
+        description: error.response.data.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "buttom",
+      });
+      setLoading(false);
+    }
+  };
   return (
     <VStack spacing="5px" color="black">
       <FormControl id="first-name" isRequired>
@@ -101,6 +183,7 @@ const SignIn = () => {
         width="100%"
         style={{ marginTop: 15 }}
         onClick={submitHandler}
+        isLoading={loading}
       >
         Submit
       </Button>
