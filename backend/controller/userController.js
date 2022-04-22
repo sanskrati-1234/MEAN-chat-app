@@ -20,13 +20,18 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     pic,
   });
+
   if (user) {
+    console.log("Line25 UserCon", user);
+    console.log("Line 26", user._id);
+    console.log("Line27", user._id.valueOf());
+    const userId = user._id.valueOf();
     res.json({
-      _id: user._id,
+      _id: userId,
       name: user.name,
       email: user.email,
       pic: user.pic,
-      token: generateToken(user._id),
+      token: userId,
     });
   } else {
     res.sendStatus(400);
@@ -41,16 +46,31 @@ const authUser = asyncHandler(async (req, res) => {
   }
   const userExists = await User.findOne({ email });
   if (userExists && (await userExists.matchPassword(password))) {
+    const userId = userExists._id.valueOf();
     res.json({
-      _id: userExists._id,
+      _id: userId,
       name: userExists.name,
       email: userExists.email,
       pic: userExists.pic,
-      token: generateToken(userExists._id),
+      token: generateToken(userId),
     });
   } else {
     res.send(400);
     throw new Error("Either email or password is invalid");
   }
 });
-module.exports = { registerUser, authUser };
+
+const allUser = asyncHandler(async (req, res) => {
+  const keyword1 = req.query.search
+    ? {
+        $or: [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
+      }
+    : {};
+  const users = await User.find(keyword1).find({ _id: { $ne: req.user._id } });
+  res.send(users);
+});
+
+module.exports = { registerUser, authUser, allUser };

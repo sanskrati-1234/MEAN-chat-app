@@ -5,13 +5,14 @@ const { chats } = require("./data/data");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const userRoute = require("./routes/userRoute");
-
+const chatRouters = require("./routes/chatRoutes");
 app.use(cors());
 require("dotenv").config();
 connectDB();
 app.use(express.json());
 
 app.use("/api/users", userRoute);
+app.use("/api/chat", chatRouters);
 app.get("/", (req, res) => {
   res.send("API is running");
 });
